@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+		<script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-venn.min.js"></script>
+		<style>
+			html,
+			body,
+			#container {
+			width: 100%;
+			height: 75%;
+			margin: 0;
+			padding: 0;
+			}  
+		</style>
+  		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body>
+		<div class="container mx-auto">
+			<header>
+			<nav class="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
+				<div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+					<a href="https://flowbite.com" class="flex items-center">
+						<img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo" />
+						<span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">MailMatch</span>
+					</a>
+					<div class="flex items-center lg:order-2">                  
+						<button data-collapse-toggle="mobile-menu-2" type="button" class="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="mobile-menu-2" aria-expanded="false">
+							<span class="sr-only">Open main menu</span>
+							<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+							<svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+						</button>
+					</div>
+					<div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="mobile-menu-2">
+						<ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+							<li>
+							<li>   
+								<a href="/" class="block py-2 pr-4 pl-3 text-white rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white" aria-current="page">Home</a>
+							</li>
+							<li>
+								<a href="/upload" class="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Upload</a>
+							</li>
+							<li>
+								<a href="/list" class="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">lists</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+			</header>
+
+			<section class="text-gray-600 body-font">
+				<div class="px-5 py-24 mx-auto flex flex-wrap">
+					<div class="flex flex-wrap -m-4 w-full">
+						<div class="p-4 lg:w-1/2 md:1/2 ">
+							<div class="flex border-2 rounded-lg border-gray-200 border-opacity-50 p-8 sm:flex-row flex-col">
+								<div class="w-16 h-16 sm:mr-8 sm:mb-0 mb-4 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 flex-shrink-0">
+									<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-8 h-8" viewBox="0 0 24 24">
+									<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+									</svg>
+								</div>
+								<div class="flex-grow">
+									<h2 class="text-gray-900 text-lg title-font font-medium mb-3">Sets Information</h2>
+									<p class="leading-relaxed text-base">																
+										<ul>
+											<% @set_info.each do |set| %>
+												<li><b>Set <%= set[:id] %>:</b> <%= set[:name] %> (Count: <%= set[:count] %>)</li>
+											<% end %>
+										</ul>
+									</p>							
+								</div>
+							</div>
+						</div>					
+						<div class="p-4 lg:w-1/2 md:1/2">
+							<div class="flex border-2 rounded-lg border-gray-200 border-opacity-50 p-8 sm:flex-row flex-col">
+								<div class="w-16 h-16 sm:mr-8 sm:mb-0 mb-4 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 flex-shrink-0">
+									<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10" viewBox="0 0 24 24">
+									<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+									<circle cx="12" cy="7" r="4"></circle>
+									</svg>
+								</div>
+								<div class="flex-grow">
+									<h2 class="text-gray-900 text-lg title-font font-medium mb-3">Pairwise Comparisons</h2>
+									<p class="leading-relaxed text-base">																	
+										<ul>
+											<% @comparisons.each do |comp| %>
+											<li>
+												<b><%= comp[:set1_name] %></b> vs <b><%= comp[:set2_name] %>:</b>
+												<%= comp[:percentage] %>% in common
+												(Common count: <%= comp[:common_count] %>)
+											</li>
+											<% end %>
+										</ul>
+									</p>							
+								</div>
+							</div>
+						</div>	
+					</div>				
+				</div>
+				<div id="venn" style="width: 100%; height: 750px"></div>      
+			</section>
+		</div>	
+	</body>
+	<%#= @comparisons %>
+<script type="text/javascript">
+
+let venn_data = [
+	<% @set_info.each do |set| %>
+  	{
+      x: '<%= set[:alpha] %>',
+      value: <%= set[:count] %>,
+      name: "<%= set[:name] %>"
+    },
+	<% end %>
+	<% @comparisons.each do |set| %>
+	{
+      x: ['<%= set[:set1_alpha] %>','<%= set[:set2_alpha] %>'],
+      value: <%= set[:common_count] %>,
+      name: '<%= set[:set1_name] %><><%= set[:set2_name] %>'
+    },
+	<% end %>
+];
+
+let venn_data2 = [        
+    {
+      x: 'A',
+      value: 11,
+      name: "<%= @comparisons[0][:set1_name]%>"
+    },
+    {
+      x: 'B',
+      value: 35,
+      name: "<%=@set2_name%>"
+    },
+    // {
+    //   x: 'C',
+    //   value: 1000,
+    //   name: 'RRGCC'
+    // },
+    {
+      x: ['A','B'],
+      value: 13,
+      name: ''
+    }
+    //,
+    // {
+    //   x: ['B','C'],
+    //   value: 325,
+    //   name: 'AAC<->RRGCC'
+    // },
+    // {
+    //   x: ['A','C'],
+    //   value: 200,
+    //   name: 'AccessFund<->RRGCC'
+    // }
+    
+
+    ];
+
+   function load_chart(){
+    let chart = anychart.venn(venn_data);
+
+    // setting the labels
+    chart.labels().format("{%Name}");
+
+    // setting the chart title
+    //chart.title("MatchMail");
+  
+    // setting the container id
+    chart.container("venn");
+
+    // drawing the diagram
+    chart.draw();
+   }
+
+  window.onload = load_chart;
+  </script>
+</html>
