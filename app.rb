@@ -5,6 +5,9 @@ require 'digest'
 require 'sequel'
 require 'email_address'
 
+set :public_folder, File.dirname(__FILE__) + '/public'
+
+
 EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
 ALPHA=['A','B','C','D','E','F','G','H','I']
 
@@ -125,6 +128,17 @@ get '/delete_hash_sets' do
   delete_hash_set(params[:hash_set]) if params[:hash_set]
   params[:hash_sets].each(&method(:delete_hash_set)) if params[:hash_sets]
   redirect '/delete'
+end
+
+get '/download/:filename' do
+  filename = params[:filename]  
+  file_path = File.join(settings.public_folder, 'emails.csv')
+
+  if File.exist?(file_path)    
+    send_file(file_path, :filename => filename, :type => 'Application/octet-stream')    
+  else
+   halt 404, "File not found"
+  end
 end
 
 def delete_hash_set id
