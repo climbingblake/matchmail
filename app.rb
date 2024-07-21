@@ -67,7 +67,9 @@ post '/upload' do
   end
 end
 
-post '/compare' do    
+post '/compare' do   
+  @set_info = [] 
+  @comparisons = []
   if params[:hash_sets] && params[:hash_sets].length >= 2
     ids = params[:hash_sets].map(&:to_i)
 
@@ -82,8 +84,6 @@ post '/compare' do
         alpha: ALPHA[index]     
       }
     end    
-    
-    @comparisons = []    
 
     @set_info.combination(2).each do |id1, id2|
       set1 = id1[:hashes]
