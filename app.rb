@@ -51,8 +51,7 @@ get '/upload' do
   erb :upload
 end 
 
-post '/upload' do
-  process_file = false
+post '/upload' do  
   if params[:file] and params[:name]
     filename  = params[:file][:filename]
     file      = params[:file][:tempfile]
@@ -63,37 +62,18 @@ post '/upload' do
     temp_file = Tempfile.new(['upload', File.extname(filename)])
     
     # Copy the uploaded file to the temporary file
-    FileUtils.copy_stream(file, temp_file)
+    FileUtils.copy_stream(file, temp_file)    
+    session[:uploaded_file_path] = temp_file.path
+    puts "------"
+    puts session[:uploaded_file_path]
+    puts "------"
 
-    process_file = true    
+    session[:name] = name
+    redirect '/process_upload'
   else
     return "No file uploaded"
   end
-
-
-  if process_file     
-    hash_set = DB[:hash_sets].insert(name: name, created_at: Time.now)
-    
-    CSV.foreach(temp_file) do |row|
-      if (hash = process_email(row[0]))
-        DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
-        cnt = cnt+1 
-      end
-    end
-    
-    FileUtils.rm(temp_file.path) #DELETE TEMP FILE
-    
-    DB[:hash_sets].where(id: hash_set).update(count: cnt)
-
-    #limit the number of saved sets
-    if DB[:hash_sets].count.to_i > LIST_LIMIT
-      delete_hash_set(DB[:hash_sets].order(Sequel.asc(:created_at)).first[:id])    
-    end
-
-    "File processed and #{cnt} hashes stored. <a href='/list'>Go to List Page</a>"
-  else
-    "No file uploaded or name provided."
-  end
+  redirect '/wrong'
 end
 
 post '/compare' do   
@@ -167,40 +147,38 @@ get '/download/:filename' do
   end
 end
 
-# File upload route
-post '/xxxxxupload' do
-  if params[:file]
-    filename = params[:file][:filename]
-    file = params[:file][:tempfile]
-
-    # Create a new temporary file
-    temp_file = Tempfile.new(['upload', File.extname(filename)])
-    
-    # Copy the uploaded file to the temporary file
-    FileUtils.copy_stream(file, temp_file)
-    
-    # Store the path of the temp file in the session for later use
-    session[:uploaded_file_path] = temp_file.path
-    
-    "File uploaded successfully. Temporary file path: #{temp_file.path}"
-  else
-    "No file uploaded"
-  end
-end
-
 get '/process_upload' do
   if session[:uploaded_file_path] && File.exist?(session[:uploaded_file_path])
     # Read and process the file
     content = File.read(session[:uploaded_file_path])
-    
-    # Process the content (example: count lines)
-    line_count = content.lines.count
-    
-    # Delete the temporary file after processing
-    File.delete(session[:uploaded_file_path])
+    cnt = 0
+
+    if content     
+      hash_set = DB[:hash_sets].insert(name: session[:name], created_at: Time.now)
+      
+      CSV.foreach(session[:uploaded_file_path]) do |row|
+        if (hash = process_email(row[0]))
+          DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
+          cnt = cnt+1 
+        end
+      end
+      
+      DB[:hash_sets].where(id: hash_set).update(count: cnt)
+  
+      #limit the number of saved sets
+      if DB[:hash_sets].count.to_i > LIST_LIMIT
+        delete_hash_set(DB[:hash_sets].order(Sequel.asc(:created_at)).first[:id])    
+      end
+  
+      "File processed and #{cnt} hashes stored. <a href='/list'>Go to List Page</a>"
+    else      
+      "No file uploaded or name provided."
+    end
+      
     session.delete(:uploaded_file_path)
+    session.delete(:name)
     
-    "Processed file. It contained #{line_count} lines."
+    "Processed file. It contained #{cnt} lines.<br><a href='/list'>Go to List Page</a><br><a href='/upload'>Upload another</a>"
   else
     "No file to process or file not found."
   end
