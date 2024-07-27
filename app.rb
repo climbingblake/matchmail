@@ -64,10 +64,6 @@ post '/upload' do
     # Copy the uploaded file to the temporary file
     FileUtils.copy_stream(file, temp_file)    
     session[:uploaded_file_path] = temp_file.path
-    puts "------"
-    puts session[:uploaded_file_path]
-    puts "------"
-
     session[:name] = name
     redirect '/process_upload'
   else
@@ -156,11 +152,23 @@ get '/process_upload' do
     if content     
       hash_set = DB[:hash_sets].insert(name: session[:name], created_at: Time.now)
       
+      # CSV.foreach(session[:uploaded_file_path]) do |row|
+      #   if (hash = process_email(row[0]))
+      #     DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
+      #     cnt = cnt+1 
+      #   end
+      # end
+
+      hashes_to_insert = []
       CSV.foreach(session[:uploaded_file_path]) do |row|
         if (hash = process_email(row[0]))
-          DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
-          cnt = cnt+1 
+          hashes_to_insert << { hash_set_id: hash_set, email_hash: hash }
         end
+      end
+
+      if hashes_to_insert.any?
+        DB[:hashes].multi_insert(hashes_to_insert)
+        cnt = hashes_to_insert.size
       end
       
       DB[:hash_sets].where(id: hash_set).update(count: cnt)
