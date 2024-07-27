@@ -4,12 +4,17 @@ require 'mail'
 require 'digest'
 require 'sequel'
 require 'email_address'
+require 'tempfile'
+require 'fileutils'
+
+enable :sessions
 
 set :public_folder, File.dirname(__FILE__) + '/public'
 
 
 EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
-ALPHA=['A','B','C','D','E','F','G','H','I']
+ALPHA       = ['A','B','C','D','E','F','G','H','I']
+LIST_LIMIT  = 10
 
 DB = Sequel.connect('sqlite://hashes.db')
 
@@ -47,20 +52,41 @@ get '/upload' do
 end 
 
 post '/upload' do
-  if params[:file] && (tmpfile = params[:file][:tempfile]) && (name = params[:name])
+  process_file = false
+  if params[:file] and params[:name]
+    filename  = params[:file][:filename]
+    file      = params[:file][:tempfile]
+    name      = params[:name]
+    cnt       = 0
+
+    # Create a new temporary file
+    temp_file = Tempfile.new(['upload', File.extname(filename)])
+    
+    # Copy the uploaded file to the temporary file
+    FileUtils.copy_stream(file, temp_file)
+
+    process_file = true    
+  else
+    return "No file uploaded"
+  end
+
+
+  if process_file     
     hash_set = DB[:hash_sets].insert(name: name, created_at: Time.now)
-    cnt = 0
-    CSV.foreach(tmpfile) do |row|
+    
+    CSV.foreach(temp_file) do |row|
       if (hash = process_email(row[0]))
         DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
         cnt = cnt+1 
       end
     end
     
+    FileUtils.rm(temp_file.path) #DELETE TEMP FILE
+    
     DB[:hash_sets].where(id: hash_set).update(count: cnt)
 
     #limit the number of saved sets
-    if DB[:hash_sets].count.to_i > 10
+    if DB[:hash_sets].count.to_i > LIST_LIMIT
       delete_hash_set(DB[:hash_sets].order(Sequel.asc(:created_at)).first[:id])    
     end
 
@@ -138,6 +164,45 @@ get '/download/:filename' do
     send_file(file_path, :filename => filename, :type => 'Application/octet-stream')    
   else
    halt 404, "File not found"
+  end
+end
+
+# File upload route
+post '/xxxxxupload' do
+  if params[:file]
+    filename = params[:file][:filename]
+    file = params[:file][:tempfile]
+
+    # Create a new temporary file
+    temp_file = Tempfile.new(['upload', File.extname(filename)])
+    
+    # Copy the uploaded file to the temporary file
+    FileUtils.copy_stream(file, temp_file)
+    
+    # Store the path of the temp file in the session for later use
+    session[:uploaded_file_path] = temp_file.path
+    
+    "File uploaded successfully. Temporary file path: #{temp_file.path}"
+  else
+    "No file uploaded"
+  end
+end
+
+get '/process_upload' do
+  if session[:uploaded_file_path] && File.exist?(session[:uploaded_file_path])
+    # Read and process the file
+    content = File.read(session[:uploaded_file_path])
+    
+    # Process the content (example: count lines)
+    line_count = content.lines.count
+    
+    # Delete the temporary file after processing
+    File.delete(session[:uploaded_file_path])
+    session.delete(:uploaded_file_path)
+    
+    "Processed file. It contained #{line_count} lines."
+  else
+    "No file to process or file not found."
   end
 end
 
