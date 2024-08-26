@@ -121,15 +121,10 @@ get '/list' do
   erb :list
 end
 
-get '/delete' do
-  @hash_sets = DB[:hash_sets].order(Sequel.desc(:created_at)).all
-  erb :delete
-end 
-
 get '/delete_hash_sets' do
   delete_hash_set(params[:hash_set]) if params[:hash_set]
   params[:hash_sets].each(&method(:delete_hash_set)) if params[:hash_sets]
-  redirect '/delete'
+  redirect '/list'
 end
 
 get '/download/:filename' do
@@ -152,13 +147,6 @@ get '/process_upload' do
     if content     
       hash_set = DB[:hash_sets].insert(name: session[:name], created_at: Time.now)
       
-      # CSV.foreach(session[:uploaded_file_path]) do |row|
-      #   if (hash = process_email(row[0]))
-      #     DB[:hashes].insert(hash_set_id: hash_set, email_hash: hash)
-      #     cnt = cnt+1 
-      #   end
-      # end
-
       hashes_to_insert = []
       CSV.foreach(session[:uploaded_file_path]) do |row|
         if (hash = process_email(row[0]))
@@ -187,6 +175,7 @@ get '/process_upload' do
     session.delete(:name)
     
     "Processed file. It contained #{cnt} lines.<br><a href='/list'>Go to List Page</a><br><a href='/upload'>Upload another</a>"
+    
   else
     "No file to process or file not found."
   end

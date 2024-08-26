@@ -48,11 +48,11 @@
                     <table class="table-auto w-full bg-indigo-950">
                     <thead>
                         <tr>
-                        <th class="px-4 py-2"></th>
+                        <th class="px-4 py-2">Select to Compare</th>
                         <th class="px-4 py-2">List Name</th>
                         <th class="px-4 py-2">Email Count</th>
                         <th class="px-4 py-2">Date Uploaded</th>
-                        
+                        <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +61,10 @@
                             <td style="border:thin solid #003366" class=" px-4 py-2"><input type="checkbox" name="hash_sets[]" value="<%= set[:id] %>"></td>
                             <td style="border:thin solid #003366" class=" px-4 py-2"><%= set[:name]%></td>
                             <td style="border:thin solid #003366" class=" px-4 py-2"><%= set[:count] %></td>
-                            <td style="border:thin solid #003366" class=" px-4 py-2"><%= set[:created_at]%></td>                    
+                            <td style="border:thin solid #003366" class=" px-4 py-2"><%= set[:created_at]%></td>    
+                            <td>
+                            <a href='/delete_hash_sets?hash_set=<%= set[:id]%>' class="flex-shrink-0 text-white bg-red-500 border-0 py-0 px-1 focus:outline-none hover:bg-red-600 rounded text-sm mt-10 sm:mt-0">Delete</a>
+                            </td>                
                             </tr>
                         <% end %>                
                     </tbody>
