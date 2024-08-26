@@ -79,7 +79,7 @@ post '/compare' do
     ids = params[:hash_sets].map(&:to_i)
 
     @set_info = ids.each_with_index.map do |id,index|
-      email_hashes = DB[:hashes].where(hash_set_id: id).select_map(:email_hash)
+      email_hashes = DB[:hashes].where(hash_set_id: id).select_map(:email_hash)      
       name = DB[:hash_sets].where(id: id).get(:name)
       {
         id: id,
@@ -140,15 +140,18 @@ end
 
 get '/process_upload' do
   if session[:uploaded_file_path] && File.exist?(session[:uploaded_file_path])
-    # Read and process the file
-    content = File.read(session[:uploaded_file_path])
+    file = session[:uploaded_file_path]  
+  end
+
+  if file    
+    content = File.read(file)
     cnt = 0
 
     if content     
       hash_set = DB[:hash_sets].insert(name: session[:name], created_at: Time.now)
       
       hashes_to_insert = []
-      CSV.foreach(session[:uploaded_file_path]) do |row|
+      CSV.foreach(file) do |row|
         if (hash = process_email(row[0]))
           hashes_to_insert << { hash_set_id: hash_set, email_hash: hash }
         end
@@ -171,6 +174,7 @@ get '/process_upload' do
       "No file uploaded or name provided."
     end
       
+    #Remove link to temp file and name
     session.delete(:uploaded_file_path)
     session.delete(:name)
     
