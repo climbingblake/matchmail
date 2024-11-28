@@ -129,7 +129,7 @@ end
 
 get '/download/:filename' do
   filename = params[:filename]  
-  file_path = File.join(settings.public_folder, 'emails.csv')
+  file_path = File.join(settings.public_folder, filename)
 
   if File.exist?(file_path)    
     send_file(file_path, :filename => filename, :type => 'Application/octet-stream')    
